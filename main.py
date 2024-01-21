@@ -11,7 +11,8 @@ mp_hands = mp.solutions.hands
 # Initialize PyAutoGUI
 pyautogui.FAILSAFE = False
 
-delta = 0.4
+deltaLeft = 0.4
+deltaRight = 0.2
 
 # Initialize video capture
 cap = cv2.VideoCapture(0)
@@ -48,55 +49,29 @@ with mp_hands.Hands(
 
                 # Determine the hand tilt direction
                 if lbl == 'Right':
-                    if thumb_y > pinky_y + delta:
+                    if thumb_y > pinky_y + deltaLeft:
                         # Press right key
-                        # pyautogui.press('right')
-                        print('moving right')
-                        # keyboard.press_and_hold('d')
-                        keyboard.press('a')
-                        # pyautogui.keyUp('a')
-                        # pyautogui.keyDown('d')
-
-                        # pyautogui.press('z')
-                    elif pinky_y > thumb_y + delta:
-                        # Press left key
-                        # pyautogui.press('left')
-                        # keyboard.press_and_release('a')
-                        keyboard.press('d')
-                        # pyautogui.keyUp('d')
-                        # pyautogui.keyDown('a')
-                        
-
                         print('moving left')
-                        # pyautogui.press('z')
+                        keyboard.press('a')
+                    elif pinky_y > thumb_y + deltaRight:
+                        # Press left key
+                        keyboard.press('d')
+                        print('moving right')
                     else:
-                        # pyautogui.keyUp('a')
-                        # pyautogui.keyUp('d')
                         keyboard.release('a')
                         keyboard.release('d')
                         print('not moving')
                 elif lbl == 'Left':
-                    if thumb_y > pinky_y + delta:
+                    if thumb_y > pinky_y + deltaLeft:
                         # Press left key
-                        # pyautogui.press('left')
-                        # keyboard.press_and_release('a')
+
                         keyboard.press('a')
-                        # pyautogui.keyUp('a')
-                        # pyautogui.keyDown('d')
                         print('moving left')
-                        # pyautogui.press('z')
-                    elif pinky_y > thumb_y + delta:
+                    elif pinky_y > thumb_y + deltaRight:
                         # Press right key
-                        # pyautogui.press('right')
-                        # pyautogui.keyUp('d')
-                        # pyautogui.keyDown('a')
-                        # keyboard.press_and_release('d')
                         keyboard.press('d')
                         print('moving right')
-                        # pyautogui.press('z')
                     else:
-                        # pyautogui.keyUp('a')
-                        # pyautogui.keyUp('d')
                         keyboard.release('a')
                         keyboard.release('d')
                         print('not moving')
