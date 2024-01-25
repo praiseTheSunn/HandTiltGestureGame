@@ -13,11 +13,13 @@ BADDIEMAXSPEED = 8
 
 # adjust difficulty
 # EASY
-ADDNEWBADDIERATE = 17
+ADDNEWBADDIERATE_EASY = 45
 # MID
-# ADDNEWBADDIERATE = 13
+ADDNEWBADDIERATE_MID = 30
 # HARD
-# ADDNEWBADDIERATE = 9
+ADDNEWBADDIERAT_HARD = 15
+addnewbaddierate = ADDNEWBADDIERATE_EASY
+addsiderate = 10
 PLAYERMOVERATE = 5
 count=5
 
@@ -26,6 +28,9 @@ def terminate():
     sys.exit()
 
 def waitForPlayerToPressKey():
+    global addnewbaddierate  # Add this line to access the global variable
+    global addnewbaddierate_label
+
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -33,13 +38,26 @@ def waitForPlayerToPressKey():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE: #escape quits
                     terminate()
-                return
+                if event.key == K_1:
+                    addnewbaddierate = ADDNEWBADDIERATE_EASY
+                    addnewbaddierate_label = 'Nhap'
+                    return
+                if event.key == K_2:
+                    addnewbaddierate = ADDNEWBADDIERATE_MID  # Fix variable name
+                    addnewbaddierate_label = 'De'
+                    return
+                if event.key == K_3:
+                    addnewbaddierate = ADDNEWBADDIERAT_HARD  # Fix variable name
+                    addnewbaddierate_label = 'Kho'
+                    return
 
 def playerHasHitBaddie(playerRect, baddies):
+    res = [[], False]
     for b in baddies:
         if playerRect.colliderect(b['rect']):
-            return [b, True]
-    return [None, False]
+            res[0].append(b)
+            res[1] = True
+    return res
 
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
@@ -73,7 +91,11 @@ sample = [car3,car4,baddieImage]
 wallLeft = pygame.image.load('image/left.png')
 wallRight = pygame.image.load('image/right.png')
 
-
+def contain(lst, name):
+    for b in lst:
+        if (b['name'] == name):
+            return True
+    return False
 # "Start" screen
 drawText('Press any key to start the game.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
 drawText('And Enjoy', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3)+30)
@@ -85,7 +107,7 @@ if not os.path.exists("data/save.dat"):
     f.write(str(zero))
     f.close()   
 v=open("data/save.dat",'r')
-topScore = int(v.readline())
+topScore = addnewbaddierate_label
 v.close()
 while (count>0):
     # start of the game
@@ -95,6 +117,7 @@ while (count>0):
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
+    sideCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
     while True: # the game loop
@@ -148,7 +171,8 @@ while (count>0):
         # Add new baddies at the top of the screen
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
-        if baddieAddCounter == ADDNEWBADDIERATE:
+            sideCounter += 1
+        if baddieAddCounter == addnewbaddierate:
             baddieAddCounter = 0
             baddieSize =30 
             newBaddie = {'rect': pygame.Rect(random.randint(140, 570), 0 - baddieSize, 23, 47),
@@ -157,11 +181,14 @@ while (count>0):
                         'name': 'baddie'
                         }
             baddies.append(newBaddie)
-            sideLeft= {'rect': pygame.Rect(0,-100,126,600),
-                       'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                       'surface':pygame.transform.scale(wallLeft, (126, 599)),
-                       'name': 'left'
-                       }
+
+        if sideCounter == addsiderate:
+            sideCounter = 0
+            sideLeft= {'rect': pygame.Rect(10,-100,126,600),
+                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                'surface':pygame.transform.scale(wallLeft, (126, 599)),
+                'name': 'left'
+                }
             baddies.append(sideLeft)
             sideRight= {'rect': pygame.Rect(600,-100,303,600),
                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
@@ -169,7 +196,6 @@ while (count>0):
                           'name': 'right'
                        }
             baddies.append(sideRight)
-            
             
 
         # Move the player around.
@@ -199,9 +225,9 @@ while (count>0):
         windowSurface.fill(BACKGROUNDCOLOR)
 
         # Draw the score and top score.
-        drawText('Score: %s' % (score), font, windowSurface, 128, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface,128, 20)
-        drawText('Rest Life: %s' % (count), font, windowSurface,128, 40)
+        drawText('Diem: %s' % (score), font, windowSurface, 135, 0)
+        drawText('Do kho: %s' % (topScore), font, windowSurface,135, 20)
+        drawText('So mang con lai: %s' % (count), font, windowSurface,135, 40)
         
         windowSurface.blit(playerImage, playerRect)
 
@@ -214,10 +240,10 @@ while (count>0):
         # Check if any of the car have hit the player.
 
         res = playerHasHitBaddie(playerRect, baddies)
-        if (res[0] != None):
-            if moveLeft and playerRect.left > 0 and not (res[0]['name'] == 'left'):
+        if (len(res[0]) > 0):
+            if moveLeft and playerRect.left > 0 and not contain(res[0], 'left'):
                 playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
-            if moveRight and playerRect.right < WINDOWWIDTH and not (res[0]['name'] == 'right'):
+            if moveRight and playerRect.right < WINDOWWIDTH and not contain(res[0], 'right'):
                 playerRect.move_ip(PLAYERMOVERATE, 0)
             if moveUp and playerRect.top > 0:
                 playerRect.move_ip(0, -1 * PLAYERMOVERATE)
@@ -233,13 +259,15 @@ while (count>0):
             if moveDown and playerRect.bottom < WINDOWHEIGHT:
                 playerRect.move_ip(0, PLAYERMOVERATE)
         if (res[1] == True):
-            if score > topScore:
-                g=open("data/save.dat",'w')
-                g.write(str(score))
-                g.close()
-                topScore = score
-            if (res[0]['name'] == 'baddie'):
+            # if score > topScore:
+            #     g=open("data/save.dat",'w')
+            #     g.write(str(score))
+            #     g.close()
+            #     topScore = score
+            if (contain(res[0], 'baddie')):
                 break
+            # if (res[0]['name'] == 'baddie'):
+            #     break
 
         if (score >= 1000):
             # drawText('You Win', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
@@ -275,7 +303,7 @@ while (count>0):
      pygame.display.update()
      time.sleep(2)
      waitForPlayerToPressKey()
-     count=3
+     count=5
      gameOverSound.stop()
 
 
