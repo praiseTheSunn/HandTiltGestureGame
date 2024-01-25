@@ -12,7 +12,12 @@ BADDIEMINSPEED = 8
 BADDIEMAXSPEED = 8
 
 # adjust difficulty
-ADDNEWBADDIERATE = 13
+# EASY
+ADDNEWBADDIERATE = 17
+# MID
+# ADDNEWBADDIERATE = 13
+# HARD
+# ADDNEWBADDIERATE = 9
 PLAYERMOVERATE = 5
 count=5
 
@@ -33,8 +38,8 @@ def waitForPlayerToPressKey():
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
-            return True
-    return False
+            return [b, True]
+    return [None, False]
 
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
@@ -149,30 +154,33 @@ while (count>0):
             newBaddie = {'rect': pygame.Rect(random.randint(140, 570), 0 - baddieSize, 23, 47),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(random.choice(sample), (23, 47)),
+                        'name': 'baddie'
                         }
             baddies.append(newBaddie)
             sideLeft= {'rect': pygame.Rect(0,-100,126,600),
                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                        'surface':pygame.transform.scale(wallLeft, (126, 599)),
+                       'name': 'left'
                        }
             baddies.append(sideLeft)
             sideRight= {'rect': pygame.Rect(600,-100,303,600),
                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                        'surface':pygame.transform.scale(wallRight, (303, 599)),
+                          'name': 'right'
                        }
             baddies.append(sideRight)
             
             
 
         # Move the player around.
-        if moveLeft and playerRect.left > 0:
-            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
-        if moveRight and playerRect.right < WINDOWWIDTH:
-            playerRect.move_ip(PLAYERMOVERATE, 0)
-        if moveUp and playerRect.top > 0:
-            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
-        if moveDown and playerRect.bottom < WINDOWHEIGHT:
-            playerRect.move_ip(0, PLAYERMOVERATE)
+        # if moveLeft and playerRect.left > 0:
+        #     playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+        # if moveRight and playerRect.right < WINDOWWIDTH:
+        #     playerRect.move_ip(PLAYERMOVERATE, 0)
+        # if moveUp and playerRect.top > 0:
+        #     playerRect.move_ip(0, -1 * PLAYERMOVERATE)
+        # if moveDown and playerRect.bottom < WINDOWHEIGHT:
+        #     playerRect.move_ip(0, PLAYERMOVERATE)
         
         for b in baddies:
             if not reverseCheat and not slowCheat:
@@ -204,13 +212,34 @@ while (count>0):
         pygame.display.update()
 
         # Check if any of the car have hit the player.
-        if playerHasHitBaddie(playerRect, baddies):
+
+        res = playerHasHitBaddie(playerRect, baddies)
+        if (res[0] != None):
+            if moveLeft and playerRect.left > 0 and not (res[0]['name'] == 'left'):
+                playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            if moveRight and playerRect.right < WINDOWWIDTH and not (res[0]['name'] == 'right'):
+                playerRect.move_ip(PLAYERMOVERATE, 0)
+            if moveUp and playerRect.top > 0:
+                playerRect.move_ip(0, -1 * PLAYERMOVERATE)
+            if moveDown and playerRect.bottom < WINDOWHEIGHT:
+                playerRect.move_ip(0, PLAYERMOVERATE)
+        else:
+            if moveLeft and playerRect.left > 0:
+                playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            if moveRight and playerRect.right < WINDOWWIDTH:
+                playerRect.move_ip(PLAYERMOVERATE, 0)
+            if moveUp and playerRect.top > 0:
+                playerRect.move_ip(0, -1 * PLAYERMOVERATE)
+            if moveDown and playerRect.bottom < WINDOWHEIGHT:
+                playerRect.move_ip(0, PLAYERMOVERATE)
+        if (res[1] == True):
             if score > topScore:
                 g=open("data/save.dat",'w')
                 g.write(str(score))
                 g.close()
                 topScore = score
-            break
+            if (res[0]['name'] == 'baddie'):
+                break
 
         if (score >= 1000):
             # drawText('You Win', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
